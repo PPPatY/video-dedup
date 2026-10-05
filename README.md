@@ -1,13 +1,14 @@
 # Video Dedup
 
-高效、安全的视频文件去重工具
+高效、安全的媒体文件去重工具（支持视频和图片）
 
 ## 功能特性
 
 - ✅ 严格内容比对（基于 SHA-256 哈希）
 - ✅ 渐进式哈希优化（大小 → 头部 → 全文）
 - ✅ SQLite 缓存支持增量扫描
-- ✅ 智能保留规则（保留最早/最短路径文件）
+- ✅ 视频与图片去重（`video` / `image` 子命令）
+- ✅ 智能保留策略（视频默认保留最早，图片默认保留最新，可手动覆盖）
 - ✅ 安全删除（移到系统回收站，可恢复）
 - ✅ 多目录扫描 + 排除规则
 - ✅ Dry-run 预览模式
@@ -38,47 +39,97 @@ pip install -e ".[dev]"
 ### 基本用法
 
 ```bash
-# 扫描单个目录
-python -m src.cli ~/Videos
+# 视频去重
+video-dedup video ~/Videos
+
+# 图片去重
+video-dedup image ~/Photos
 
 # 扫描多个目录
-python -m src.cli ~/Videos ~/Downloads ~/Desktop
+video-dedup video ~/Videos ~/Downloads
+video-dedup image ~/Photos ~/Desktop
 ```
+
+未安装为命令时，可用 `python -m src.cli video ~/Videos` 代替。
 
 ### 高级选项
 
 ```bash
 # 排除特定目录
-python -m src.cli ~/Videos --exclude "iMovie 项目" "Final Cut"
+video-dedup video ~/Videos --exclude "iMovie 项目" "Final Cut"
+video-dedup image ~/Photos --exclude "Thumbnails"
 
 # 预览模式（不删除）
-python -m src.cli ~/Videos --dry-run
+video-dedup video ~/Videos --dry-run
+video-dedup image ~/Photos --dry-run
+
+# 手动指定保留策略
+video-dedup video ~/Videos --keep-strategy newest  # 保留最新（非默认）
+video-dedup image ~/Photos --keep-strategy oldest  # 保留最早（非默认）
 
 # 清空缓存重新扫描
-python -m src.cli ~/Videos --clear-cache
+video-dedup video ~/Videos --clear-cache
 
 # 自定义缓存目录
-python -m src.cli ~/Videos --cache-dir ~/my-cache
+video-dedup video ~/Videos --cache-dir ~/my-cache
 
 # 跟随符号链接
-python -m src.cli ~/Videos --follow-symlinks
+video-dedup video ~/Videos --follow-symlinks
 
 # 包含隐藏文件
-python -m src.cli ~/Videos --include-hidden
+video-dedup video ~/Videos --include-hidden
+
+# 使用 4 个线程并行计算哈希
+video-dedup video ~/Videos --threads 4
+```
+
+### 保留策略
+
+**智能策略（默认，`--keep-strategy smart`）**：
+- 视频文件：保留**最早**修改的文件（原始录制最重要）
+- 图片文件：保留**最新**修改的文件（编辑后版本通常更好）
+
+**手动覆盖**：
+```bash
+video-dedup image ~/Photos --keep-strategy oldest  # 图片也保留最早
 ```
 
 ### 典型工作流
 
 ```bash
 # 1. 首次扫描（预览）
-python -m src.cli ~/Videos ~/Downloads --dry-run
+video-dedup video ~/Videos --dry-run
+video-dedup image ~/Photos --dry-run
 
 # 2. 确认无误后执行删除
-python -m src.cli ~/Videos ~/Downloads
+video-dedup video ~/Videos
+video-dedup image ~/Photos
 
 # 3. 后续增量扫描（快速）
-python -m src.cli ~/Videos ~/Downloads
+video-dedup video ~/Videos  # 缓存加速
 ```
+
+## 支持的文件格式
+
+**视频**（20 种）：.mp4, .mov, .avi, .mkv, .flv, .wmv, .m4v, .mpg, .mpeg, .3gp, .webm, .ogv, .ts, .mts, .vob, .rm, .rmvb, .asf, .m2ts, .divx
+
+**图片**（15 种）：.jpg, .jpeg, .png, .gif, .bmp, .webp, .raw, .cr2, .nef, .arw, .tiff, .tif, .heic, .heif, .svg
+
+## 从 v1.x 升级
+
+⚠️ **v2.0.0 包含破坏性变更**
+
+**旧版本 (v1.x)**:
+```bash
+video-dedup ~/Videos
+```
+
+**新版本 (v2.0)**:
+```bash
+video-dedup video ~/Videos
+```
+
+详见 [迁移指南](docs/migration-v1-to-v2.md)
 
 ## 工作原理
 
@@ -90,7 +141,7 @@ python -m src.cli ~/Videos ~/Downloads
 
 ### 智能保留规则
 
-1. 保留修改时间最早的文件（原始文件）
+1. 按 `--keep-strategy` 选择：`oldest` 保留修改时间最早的文件，`newest` 保留最新的文件；`smart`（默认）对视频用 `oldest`，对图片用 `newest`
 2. 如果时间相近（< 24 小时），保留路径最短的
 3. 如果路径长度相同，保留字典序最小的
 
@@ -135,7 +186,7 @@ pytest --cov=src --cov-report=html
 ### 缓存损坏
 
 ```bash
-python -m src.cli ~/Videos --clear-cache
+video-dedup video ~/Videos --clear-cache
 ```
 
 ### 权限错误
@@ -153,4 +204,3 @@ MIT License
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
-
