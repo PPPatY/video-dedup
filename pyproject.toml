@@ -1,0 +1,30 @@
+[project]
+name = "video-dedup"
+version = "1.0.0"
+description = "高效、安全的视频文件去重工具"
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=13.0.0",
+    "send2trash>=1.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.scripts]
+video-dedup = "src.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
