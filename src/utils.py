@@ -1,11 +1,5 @@
 """Utility functions and constants."""
 
-VIDEO_EXTENSIONS = {
-    '.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv', '.m4v',
-    '.mpg', '.mpeg', '.3gp', '.webm', '.ogv', '.ts', '.mts',
-    '.vob', '.rm', '.rmvb', '.asf', '.m2ts', '.divx'
-}
-
 def format_size(bytes: int) -> str:
     """Format bytes as human-readable size (e.g., '1.2 GB')."""
     if bytes < 1024:

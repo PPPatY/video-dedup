@@ -1,12 +1,4 @@
 # tests/test_utils.py
-def test_video_extensions_contains_common_formats():
-    from src.utils import VIDEO_EXTENSIONS
-    assert '.mp4' in VIDEO_EXTENSIONS
-    assert '.mov' in VIDEO_EXTENSIONS
-    assert '.avi' in VIDEO_EXTENSIONS
-    assert '.mkv' in VIDEO_EXTENSIONS
-    assert len(VIDEO_EXTENSIONS) >= 15  # At least 15 formats
-
 def test_format_size_bytes():
     from src.utils import format_size
     assert format_size(500) == "500 B"
