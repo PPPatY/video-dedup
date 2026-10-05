@@ -1,7 +1,7 @@
 [project]
 name = "video-dedup"
-version = "1.0.0"
-description = "高效、安全的视频文件去重工具"
+version = "2.0.0"
+description = "高效、安全的媒体文件去重工具（支持视频和图片）"
 requires-python = ">=3.10"
 dependencies = [
     "rich>=13.0.0",
@@ -25,6 +25,13 @@ build-backend = "hatchling.build"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
