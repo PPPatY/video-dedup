@@ -3,8 +3,9 @@ from pathlib import Path
 from send2trash import send2trash
 import json
 from datetime import datetime
+from typing import Any
 
-def delete_files(files: list[Path], dry_run: bool = False) -> dict[str, any]:
+def delete_files(files: list[Path], dry_run: bool = False) -> dict[str, Any]:
     """
     Delete files by moving to system trash.
 

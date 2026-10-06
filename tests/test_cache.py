@@ -106,6 +106,28 @@ def test_update_last_seen(temp_dir, create_test_file):
 
     assert last_seen_2 > last_seen_1
 
+def test_cache_hit_updates_last_seen(temp_dir, create_test_file):
+    """Looking up a valid hash refreshes retention without a second DB call."""
+    from src.cache import Cache
+    import os
+    import sqlite3
+
+    cache = Cache(temp_dir / "cache")
+    file_path = create_test_file(temp_dir, "video.mp4", b"content")
+    stat = os.stat(file_path)
+    cache.store_hash(file_path, stat.st_size, stat.st_mtime, "hash1")
+
+    conn = sqlite3.connect(cache.db_path)
+    conn.execute("UPDATE file_hashes SET last_seen=0")
+    conn.commit()
+    conn.close()
+
+    assert cache.get_hash(file_path, stat.st_size, stat.st_mtime) == "hash1"
+    conn = sqlite3.connect(cache.db_path)
+    last_seen = conn.execute("SELECT last_seen FROM file_hashes").fetchone()[0]
+    conn.close()
+    assert last_seen > 0
+
 def test_clean_old_entries(temp_dir, create_test_file):
     """Test cleaning entries older than N days."""
     from src.cache import Cache

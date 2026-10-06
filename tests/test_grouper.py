@@ -32,6 +32,20 @@ def test_group_by_hash(temp_dir, create_test_file):
     duplicate_group = [g for g in groups.values() if len(g) == 2][0]
     assert set(duplicate_group) == {file1, file2}
 
+def test_group_by_hash_supports_parallel_workers(temp_dir, create_test_file):
+    """Hash grouping can use multiple workers without changing results."""
+    from src.grouper import group_by_hash
+    from src.hasher import compute_full_hash
+
+    file1 = create_test_file(temp_dir, "file1.mp4", b"same content")
+    file2 = create_test_file(temp_dir, "file2.mp4", b"same content")
+    file3 = create_test_file(temp_dir, "file3.mp4", b"different")
+
+    groups = group_by_hash([file1, file2, file3], compute_full_hash, workers=2)
+
+    duplicate_group = [group for group in groups.values() if len(group) == 2][0]
+    assert set(duplicate_group) == {file1, file2}
+
 def test_find_duplicates_three_stage(temp_dir, create_test_file):
     """Test finding duplicates using three-stage progressive hashing."""
     from src.grouper import find_duplicates
